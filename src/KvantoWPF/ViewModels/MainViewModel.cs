@@ -754,7 +754,7 @@ public sealed class MainViewModel : ObservableObject
         }
 
         var lastDay = workedDays[^1];
-        if (lastDay < DateTime.Today.AddDays(-1))
+        if (lastDay.Date < DateTime.Today.AddDays(-1).Date)
         {
             return 0;
         }

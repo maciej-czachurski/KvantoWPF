@@ -17,5 +17,5 @@ Kvanto is a Windows 11 focused daily task tracker built with WPF.
 ## Build
 
 ```bash
-dotnet build /home/runner/work/KvantoWPF/KvantoWPF/src/KvantoWPF/KvantoWPF.csproj
+dotnet build src/KvantoWPF/KvantoWPF.csproj
 ```
