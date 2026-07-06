@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private const uint ModControl = 0x0002;
     private readonly MainViewModel _viewModel;
     private readonly NotifyIcon _notifyIcon;
+    private readonly TrayIconResources _trayIcons;
     private CompactWindow? _compactWindow;
     private bool _exitRequested;
 
@@ -35,6 +36,7 @@ public partial class MainWindow : Window
         _viewModel.CompactViewRequested += (_, _) => ShowCompactWindow();
 
         DataContext = _viewModel;
+        _trayIcons = new TrayIconResources();
 
         _notifyIcon = new NotifyIcon
         {
@@ -126,6 +128,7 @@ public partial class MainWindow : Window
     {
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
+        _trayIcons.Dispose();
 
         var handle = new WindowInteropHelper(this).Handle;
         UnregisterHotKey(handle, ToggleHotKeyId);
@@ -217,17 +220,15 @@ public partial class MainWindow : Window
 
     private void UpdateTrayIcon()
     {
-        var color = _viewModel.CurrentPhase switch
+        _notifyIcon.Icon = _viewModel.CurrentPhase switch
         {
-            PomodoroPhase.Work => Color.FromArgb(239, 68, 68),
-            PomodoroPhase.ShortBreak or PomodoroPhase.LongBreak => Color.FromArgb(16, 185, 129),
-            _ => Color.FromArgb(107, 114, 128)
+            PomodoroPhase.Work => _trayIcons.WorkIcon,
+            PomodoroPhase.ShortBreak or PomodoroPhase.LongBreak => _trayIcons.BreakIcon,
+            _ => _trayIcons.IdleIcon
         };
-
-        _notifyIcon.Icon = CreateIcon(color);
     }
 
-    private static Icon CreateIcon(Color color)
+    private static Icon CreateIcon(Color color, out IntPtr iconHandle)
     {
         using var bitmap = new Bitmap(32, 32);
         using var graphics = Graphics.FromImage(bitmap);
@@ -237,10 +238,38 @@ public partial class MainWindow : Window
         using var pen = new Pen(Color.White, 2f);
         graphics.FillEllipse(brush, 2, 2, 28, 28);
         graphics.DrawEllipse(pen, 2, 2, 28, 28);
-        var iconHandle = bitmap.GetHicon();
-        using var icon = System.Drawing.Icon.FromHandle(iconHandle);
-        var clonedIcon = (Icon)icon.Clone();
-        DestroyIcon(iconHandle);
-        return clonedIcon;
+        iconHandle = bitmap.GetHicon();
+        return System.Drawing.Icon.FromHandle(iconHandle);
+    }
+
+    private sealed class TrayIconResources : IDisposable
+    {
+        private readonly IntPtr _idleHandle;
+        private readonly IntPtr _workHandle;
+        private readonly IntPtr _breakHandle;
+
+        public TrayIconResources()
+        {
+            IdleIcon = CreateIcon(Color.FromArgb(107, 114, 128), out _idleHandle);
+            WorkIcon = CreateIcon(Color.FromArgb(239, 68, 68), out _workHandle);
+            BreakIcon = CreateIcon(Color.FromArgb(16, 185, 129), out _breakHandle);
+        }
+
+        public Icon IdleIcon { get; }
+
+        public Icon WorkIcon { get; }
+
+        public Icon BreakIcon { get; }
+
+        public void Dispose()
+        {
+            IdleIcon.Dispose();
+            WorkIcon.Dispose();
+            BreakIcon.Dispose();
+
+            DestroyIcon(_idleHandle);
+            DestroyIcon(_workHandle);
+            DestroyIcon(_breakHandle);
+        }
     }
 }

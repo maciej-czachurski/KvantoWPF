@@ -644,10 +644,14 @@ public sealed class MainViewModel : ObservableObject
                 group => group.Key,
                 group => group
                     .GroupBy(entry => entry.TaskId)
-                    .Select(entries => new CalendarTaskEntryViewModel(
-                        entries.First().TaskTitle,
-                        entries.Sum(item => item.Minutes),
-                        entries.First().ColorHex))
+                    .Select(entries =>
+                    {
+                        var firstEntry = entries.First();
+                        return new CalendarTaskEntryViewModel(
+                            firstEntry.TaskTitle,
+                            entries.Sum(item => item.Minutes),
+                            firstEntry.ColorHex);
+                    })
                     .OrderByDescending(entry => entry.Minutes)
                     .ToList());
 
@@ -762,7 +766,7 @@ public sealed class MainViewModel : ObservableObject
         var streak = 1;
         for (var index = workedDays.Count - 1; index > 0; index--)
         {
-            if (workedDays[index].AddDays(-1) != workedDays[index - 1])
+            if (workedDays[index].Date.AddDays(-1) != workedDays[index - 1].Date)
             {
                 break;
             }
