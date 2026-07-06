@@ -361,7 +361,7 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" FontSize="12"
                                                               Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="{Binding StartPauseText}" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Start Timer" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
                                                 </StackPanel>
                                             </Button>
                                             <Button Command="{Binding SelectTaskForEditCommand}"
@@ -478,13 +478,16 @@
 
                                         <!-- Daily Goal progress -->
                                         <DockPanel Margin="0,0,0,6">
-                                            <TextBlock Text="{Binding TodayPomodoroCount, StringFormat={}{0}/8}"
-                                                       DockPanel.Dock="Right" FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource AccentBrush}"/>
+                                            <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource AccentBrush}">
+                                                <Run Text="{Binding TodayPomodoroCount, Mode=OneWay}"/>
+                                                <Run Text="/"/>
+                                                <Run Text="{Binding DailyPomodoroGoal, Mode=OneWay}"/>
+                                            </TextBlock>
                                             <TextBlock Text="Daily Goal (Pomodoros)" FontSize="12"
                                                        Foreground="{StaticResource SecondaryTextBrush}"/>
                                         </DockPanel>
-                                        <ProgressBar Value="{Binding TodayPomodoroCount}" Maximum="8" Margin="0,0,0,16"/>
+                                        <ProgressBar Value="{Binding TodayPomodoroCount}" Maximum="{Binding DailyPomodoroGoal}" Margin="0,0,0,16"/>
 
                                         <!-- Stats grid -->
                                         <Grid>
@@ -714,6 +717,19 @@
                                             <TextBlock Text="Long Break Every" FontSize="12" FontWeight="SemiBold"
                                                        Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
                                             <TextBox Text="{Binding LongBreakFrequency}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,10,0">
+                                            <TextBlock Text="Daily Goal (Pomodoros)" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                            <TextBox Text="{Binding DailyPomodoroGoal}"/>
                                         </StackPanel>
                                     </Grid>
 

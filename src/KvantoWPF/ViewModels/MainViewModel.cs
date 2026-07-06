@@ -47,6 +47,7 @@ public sealed class MainViewModel : ObservableObject
     private int _shortBreakMinutes = 5;
     private int _longBreakMinutes = 15;
     private int _longBreakFrequency = 4;
+    private int _dailyPomodoroGoal = 8;
     private PomodoroPhase _currentPhase;
     private TimeSpan _remainingTime = TimeSpan.FromMinutes(25);
     private TimeSpan _currentSessionLength = TimeSpan.FromMinutes(25);
@@ -228,6 +229,12 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _longBreakFrequency;
         set => SetProperty(ref _longBreakFrequency, Math.Max(1, value));
+    }
+
+    public int DailyPomodoroGoal
+    {
+        get => _dailyPomodoroGoal;
+        set => SetProperty(ref _dailyPomodoroGoal, Math.Max(1, value));
     }
 
     public PomodoroPhase CurrentPhase
@@ -447,7 +454,7 @@ public sealed class MainViewModel : ObservableObject
                 .SelectMany(t => t.WorkLogs)
                 .Where(log => log.StartedAt.Date == DateTime.Today)
                 .Sum(log => log.Minutes);
-            return $"{totalMinutes / 60 + totalMinutes % 60 / 60.0:F1}h";
+            return $"{totalMinutes / 60.0:F1}h";
         }
     }
 
