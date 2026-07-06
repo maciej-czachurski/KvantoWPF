@@ -76,7 +76,7 @@ public sealed class MainViewModel : ObservableObject
         _saveTaskCommand = new RelayCommand(SaveTask);
         _deleteTaskCommand = new RelayCommand(DeleteSelectedTask, () => SelectedTask is not null);
         _toggleTaskStateCommand = new RelayCommand(ToggleTaskState, () => SelectedTask is not null);
-        _startPauseCommand = new RelayCommand(StartOrPauseTimer, () => SelectedTask is not null && !SelectedTask.IsCompleted || IsTimerRunning || CurrentPhase != PomodoroPhase.Idle);
+        _startPauseCommand = new RelayCommand(StartOrPauseTimer, () => (SelectedTask is not null && !SelectedTask.IsCompleted) || IsTimerRunning || CurrentPhase != PomodoroPhase.Idle);
         _stopCommand = new RelayCommand(StopTimer, () => CurrentPhase != PomodoroPhase.Idle || IsTimerRunning);
         _skipCommand = new RelayCommand(SkipToNextSession, () => CurrentPhase != PomodoroPhase.Idle || SelectedTask is { IsCompleted: false });
         _newTaskCommand = new RelayCommand(ClearTaskDraft);
@@ -606,11 +606,6 @@ public sealed class MainViewModel : ObservableObject
         }
 
         RemainingTime -= TimeSpan.FromSeconds(1);
-        if (RemainingTime <= TimeSpan.Zero)
-        {
-            RemainingTime = TimeSpan.Zero;
-            CompleteCurrentSession();
-        }
     }
 
     private void CompleteCurrentSession()

@@ -57,6 +57,9 @@ public partial class MainWindow : Window
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool DestroyIcon(IntPtr hIcon);
+
     private ContextMenuStrip BuildTrayMenu()
     {
         var menu = new ContextMenuStrip();
@@ -235,6 +238,9 @@ public partial class MainWindow : Window
         graphics.FillEllipse(brush, 2, 2, 28, 28);
         graphics.DrawEllipse(pen, 2, 2, 28, 28);
         var iconHandle = bitmap.GetHicon();
-        return System.Drawing.Icon.FromHandle(iconHandle);
+        using var icon = System.Drawing.Icon.FromHandle(iconHandle);
+        var clonedIcon = (Icon)icon.Clone();
+        DestroyIcon(iconHandle);
+        return clonedIcon;
     }
 }
