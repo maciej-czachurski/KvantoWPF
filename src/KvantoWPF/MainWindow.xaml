@@ -48,21 +48,21 @@
                             <Border CornerRadius="4" Padding="7,2" Margin="0,0,6,0">
                                 <Border.Style>
                                     <Style TargetType="Border">
-                                        <Setter Property="Background" Value="#FEF3C7"/>
+                                        <Setter Property="Background" Value="{StaticResource PriorityMediumBrush}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Priority}" Value="{x:Static models:TaskPriority.Critical}">
-                                                <Setter Property="Background" Value="#FEE2E2"/>
+                                                <Setter Property="Background" Value="{StaticResource PriorityCriticalBrush}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding Priority}" Value="{x:Static models:TaskPriority.High}">
-                                                <Setter Property="Background" Value="#FFEDD5"/>
+                                                <Setter Property="Background" Value="{StaticResource PriorityHighBrush}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding Priority}" Value="{x:Static models:TaskPriority.Low}">
-                                                <Setter Property="Background" Value="#DCFCE7"/>
+                                                <Setter Property="Background" Value="{StaticResource PriorityLowBrush}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
-                                <TextBlock Text="{Binding Priority}" FontSize="11" Foreground="#374151" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Priority}" FontSize="11" Foreground="{StaticResource PriorityBadgeTextBrush}" FontWeight="SemiBold"/>
                             </Border>
                             <TextBlock Text="{Binding PomodoroProgress}" FontSize="11"
                                        Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>

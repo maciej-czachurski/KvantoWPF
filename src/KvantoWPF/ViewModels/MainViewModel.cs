@@ -16,6 +16,13 @@ public sealed class MainViewModel : ObservableObject
     private const string AllCategoriesOption = "All Categories";
     private const string AllPrioritiesOption = "All Priorities";
 
+    private const string SortPriorityHighToLow = "Priority (High to Low)";
+    private const string SortPriorityLowToHigh = "Priority (Low to High)";
+    private const string SortTitleAToZ = "Title (A-Z)";
+    private const string SortTitleZToA = "Title (Z-A)";
+    private const string SortMostTrackedTime = "Most Tracked Time";
+    private const string SortCategory = "Category";
+
     private static readonly string[] TaskColors =
     {
         "#EF4444",
@@ -72,7 +79,7 @@ public sealed class MainViewModel : ObservableObject
     private string _taskSearchText = string.Empty;
     private string _selectedCategoryFilter = AllCategoriesOption;
     private string _selectedPriorityFilter = AllPrioritiesOption;
-    private string _selectedSortOption = "Priority (High to Low)";
+    private string _selectedSortOption = SortPriorityHighToLow;
 
     public MainViewModel()
     {
@@ -90,12 +97,12 @@ public sealed class MainViewModel : ObservableObject
             .ToArray();
         TaskSortOptions = new[]
         {
-            "Priority (High to Low)",
-            "Priority (Low to High)",
-            "Title (A-Z)",
-            "Title (Z-A)",
-            "Most Tracked Time",
-            "Category"
+            SortPriorityHighToLow,
+            SortPriorityLowToHigh,
+            SortTitleAToZ,
+            SortTitleZToA,
+            SortMostTrackedTime,
+            SortCategory
         };
 
         ActiveTasksView = CollectionViewSource.GetDefaultView(ActiveTasks);
@@ -882,12 +889,12 @@ public sealed class MainViewModel : ObservableObject
 
         var descriptions = SelectedSortOption switch
         {
-            "Priority (High to Low)" => new[] { new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending) },
-            "Priority (Low to High)" => new[] { new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Ascending) },
-            "Title (A-Z)" => new[] { new SortDescription(nameof(TaskItem.Title), ListSortDirection.Ascending) },
-            "Title (Z-A)" => new[] { new SortDescription(nameof(TaskItem.Title), ListSortDirection.Descending) },
-            "Most Tracked Time" => new[] { new SortDescription(nameof(TaskItem.TotalWorkedMinutes), ListSortDirection.Descending) },
-            "Category" => new[] { new SortDescription(nameof(TaskItem.Category), ListSortDirection.Ascending) },
+            SortPriorityHighToLow => new[] { new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending) },
+            SortPriorityLowToHigh => new[] { new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Ascending) },
+            SortTitleAToZ => new[] { new SortDescription(nameof(TaskItem.Title), ListSortDirection.Ascending) },
+            SortTitleZToA => new[] { new SortDescription(nameof(TaskItem.Title), ListSortDirection.Descending) },
+            SortMostTrackedTime => new[] { new SortDescription(nameof(TaskItem.TotalWorkedMinutes), ListSortDirection.Descending) },
+            SortCategory => new[] { new SortDescription(nameof(TaskItem.Category), ListSortDirection.Ascending) },
             _ => new[] { new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending) }
         };
 

@@ -21,6 +21,13 @@
             <SolidColorBrush x:Key="MutedTextBrush" Color="#9CA3AF"/>
             <SolidColorBrush x:Key="SidebarBrush" Color="White"/>
 
+            <!-- Priority badge brushes -->
+            <SolidColorBrush x:Key="PriorityCriticalBrush" Color="#FEE2E2"/>
+            <SolidColorBrush x:Key="PriorityHighBrush" Color="#FFEDD5"/>
+            <SolidColorBrush x:Key="PriorityMediumBrush" Color="#FEF3C7"/>
+            <SolidColorBrush x:Key="PriorityLowBrush" Color="#DCFCE7"/>
+            <SolidColorBrush x:Key="PriorityBadgeTextBrush" Color="#374151"/>
+
             <!-- Default TextBlock -->
             <Style TargetType="TextBlock">
                 <Setter Property="FontFamily" Value="Segoe UI"/>
