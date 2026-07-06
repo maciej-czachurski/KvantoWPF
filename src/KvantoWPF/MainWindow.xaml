@@ -487,7 +487,7 @@
                                             <TextBlock Text="Daily Goal (Pomodoros)" FontSize="12"
                                                        Foreground="{StaticResource SecondaryTextBrush}"/>
                                         </DockPanel>
-                                        <ProgressBar Value="{Binding TodayPomodoroCount}" Maximum="{Binding DailyPomodoroGoal}" Margin="0,0,0,16"/>
+                                        <ProgressBar Value="{Binding TodayPomodoroCount, Mode=OneWay}" Maximum="{Binding DailyPomodoroGoal}" Margin="0,0,0,16"/>
 
                                         <!-- Stats grid -->
                                         <Grid>
