@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.Collections.ObjectModel;
+using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 using KvantoWPF.Infrastructure;
@@ -11,6 +13,9 @@ namespace KvantoWPF.ViewModels;
 
 public sealed class MainViewModel : ObservableObject
 {
+    private const string AllCategoriesOption = "All Categories";
+    private const string AllPrioritiesOption = "All Priorities";
+
     private static readonly string[] TaskColors =
     {
         "#EF4444",
@@ -64,6 +69,10 @@ public sealed class MainViewModel : ObservableObject
     private string _reportDailyAverage = "00:00";
     private int _reportCurrentStreak;
     private DateTime _currentSessionStartedAt = DateTime.Now;
+    private string _taskSearchText = string.Empty;
+    private string _selectedCategoryFilter = AllCategoriesOption;
+    private string _selectedPriorityFilter = AllPrioritiesOption;
+    private string _selectedSortOption = "Priority (High to Low)";
 
     public MainViewModel()
     {
@@ -74,6 +83,27 @@ public sealed class MainViewModel : ObservableObject
         CalendarDays = new ObservableCollection<CalendarDayViewModel>();
         TaskReportItems = new ObservableCollection<ReportBarItem>();
         DailyReportItems = new ObservableCollection<ReportBarItem>();
+
+        TaskCategoryFilterOptions = new ObservableCollection<string> { AllCategoriesOption };
+        TaskPriorityFilterOptions = new[] { AllPrioritiesOption }
+            .Concat(Enum.GetNames<TaskPriority>())
+            .ToArray();
+        TaskSortOptions = new[]
+        {
+            "Priority (High to Low)",
+            "Priority (Low to High)",
+            "Title (A-Z)",
+            "Title (Z-A)",
+            "Most Tracked Time",
+            "Category"
+        };
+
+        ActiveTasksView = CollectionViewSource.GetDefaultView(ActiveTasks);
+        ArchivedTasksView = CollectionViewSource.GetDefaultView(ArchivedTasks);
+        ActiveTasksView.Filter = FilterTask;
+        ArchivedTasksView.Filter = FilterTask;
+        ConfigureLiveShaping(ActiveTasksView);
+        ConfigureLiveShaping(ArchivedTasksView);
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += OnTimerTick;
@@ -101,6 +131,8 @@ public sealed class MainViewModel : ObservableObject
         ResetToIdle();
         RefreshCalendar();
         RefreshReports();
+        ApplySort();
+        RefreshTaskCategoryOptions();
     }
 
     public event EventHandler? CompactViewRequested;
@@ -113,6 +145,16 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<TaskItem> ActiveTasks { get; }
 
     public ObservableCollection<TaskItem> ArchivedTasks { get; }
+
+    public ICollectionView ActiveTasksView { get; }
+
+    public ICollectionView ArchivedTasksView { get; }
+
+    public ObservableCollection<string> TaskCategoryFilterOptions { get; }
+
+    public string[] TaskPriorityFilterOptions { get; }
+
+    public string[] TaskSortOptions { get; }
 
     public ObservableCollection<CalendarDayViewModel> CalendarDays { get; }
 
@@ -155,6 +197,60 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _selectedPage;
         set => SetProperty(ref _selectedPage, value);
+    }
+
+    public string TaskSearchText
+    {
+        get => _taskSearchText;
+        set
+        {
+            if (SetProperty(ref _taskSearchText, value))
+            {
+                OnPropertyChanged(nameof(HasTaskSearchText));
+                OnPropertyChanged(nameof(ShowSearchPlaceholder));
+                RefreshTaskViews();
+            }
+        }
+    }
+
+    public bool HasTaskSearchText => !string.IsNullOrEmpty(TaskSearchText);
+
+    public bool ShowSearchPlaceholder => !HasTaskSearchText;
+
+    public string SelectedCategoryFilter
+    {
+        get => _selectedCategoryFilter;
+        set
+        {
+            if (SetProperty(ref _selectedCategoryFilter, value))
+            {
+                RefreshTaskViews();
+            }
+        }
+    }
+
+    public string SelectedPriorityFilter
+    {
+        get => _selectedPriorityFilter;
+        set
+        {
+            if (SetProperty(ref _selectedPriorityFilter, value))
+            {
+                RefreshTaskViews();
+            }
+        }
+    }
+
+    public string SelectedSortOption
+    {
+        get => _selectedSortOption;
+        set
+        {
+            if (SetProperty(ref _selectedSortOption, value))
+            {
+                ApplySort();
+            }
+        }
     }
 
     public TaskItem? SelectedTask
@@ -469,6 +565,10 @@ public sealed class MainViewModel : ObservableObject
 
     public bool HasNoTodayCompletedItems => TodayCompletedCount == 0;
 
+    public bool HasNoFilteredActiveTasks => ActiveTasksView.IsEmpty;
+
+    public bool HasNoFilteredArchivedTasks => ArchivedTasksView.IsEmpty;
+
     public void StartNextPomodoroFromNotification()
     {
         if (SelectedTask is null || SelectedTask.IsCompleted)
@@ -731,6 +831,116 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(TodayCompletedItems));
         OnPropertyChanged(nameof(HasTodayCompletedItems));
         OnPropertyChanged(nameof(HasNoTodayCompletedItems));
+        RefreshTaskCategoryOptions();
+    }
+
+    private bool FilterTask(object obj)
+    {
+        if (obj is not TaskItem task)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(TaskSearchText))
+        {
+            var search = TaskSearchText.Trim();
+            var matchesTitle = task.Title.Contains(search, StringComparison.OrdinalIgnoreCase);
+            var matchesCategory = task.Category.Contains(search, StringComparison.OrdinalIgnoreCase);
+            if (!matchesTitle && !matchesCategory)
+            {
+                return false;
+            }
+        }
+
+        if (!string.Equals(SelectedCategoryFilter, AllCategoriesOption, StringComparison.Ordinal) &&
+            !string.Equals(task.Category, SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.Equals(SelectedPriorityFilter, AllPrioritiesOption, StringComparison.Ordinal) &&
+            !string.Equals(task.Priority.ToString(), SelectedPriorityFilter, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void RefreshTaskViews()
+    {
+        ActiveTasksView.Refresh();
+        ArchivedTasksView.Refresh();
+        OnPropertyChanged(nameof(HasNoFilteredActiveTasks));
+        OnPropertyChanged(nameof(HasNoFilteredArchivedTasks));
+    }
+
+    private void ApplySort()
+    {
+        ActiveTasksView.SortDescriptions.Clear();
+        ArchivedTasksView.SortDescriptions.Clear();
+
+        var descriptions = SelectedSortOption switch
+        {
+            "Priority (High to Low)" => new[] { new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending) },
+            "Priority (Low to High)" => new[] { new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Ascending) },
+            "Title (A-Z)" => new[] { new SortDescription(nameof(TaskItem.Title), ListSortDirection.Ascending) },
+            "Title (Z-A)" => new[] { new SortDescription(nameof(TaskItem.Title), ListSortDirection.Descending) },
+            "Most Tracked Time" => new[] { new SortDescription(nameof(TaskItem.TotalWorkedMinutes), ListSortDirection.Descending) },
+            "Category" => new[] { new SortDescription(nameof(TaskItem.Category), ListSortDirection.Ascending) },
+            _ => new[] { new SortDescription(nameof(TaskItem.Priority), ListSortDirection.Descending) }
+        };
+
+        foreach (var description in descriptions)
+        {
+            ActiveTasksView.SortDescriptions.Add(description);
+            ArchivedTasksView.SortDescriptions.Add(description);
+        }
+
+        RefreshTaskViews();
+    }
+
+    private void RefreshTaskCategoryOptions()
+    {
+        var categories = GetAllTasks()
+            .Select(t => t.Category)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(c => c, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var previousSelection = SelectedCategoryFilter;
+
+        TaskCategoryFilterOptions.Clear();
+        TaskCategoryFilterOptions.Add(AllCategoriesOption);
+        foreach (var category in categories)
+        {
+            TaskCategoryFilterOptions.Add(category);
+        }
+
+        if (!TaskCategoryFilterOptions.Contains(previousSelection))
+        {
+            SelectedCategoryFilter = AllCategoriesOption;
+        }
+    }
+
+    private static void ConfigureLiveShaping(ICollectionView view)
+    {
+        if (view is not ListCollectionView listView)
+        {
+            return;
+        }
+
+        listView.IsLiveFiltering = true;
+        listView.LiveFilteringProperties.Add(nameof(TaskItem.Title));
+        listView.LiveFilteringProperties.Add(nameof(TaskItem.Category));
+        listView.LiveFilteringProperties.Add(nameof(TaskItem.Priority));
+
+        listView.IsLiveSorting = true;
+        listView.LiveSortingProperties.Add(nameof(TaskItem.Priority));
+        listView.LiveSortingProperties.Add(nameof(TaskItem.Title));
+        listView.LiveSortingProperties.Add(nameof(TaskItem.Category));
+        listView.LiveSortingProperties.Add(nameof(TaskItem.TotalWorkedMinutes));
     }
 
     private void RefreshCalendar()
