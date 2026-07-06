@@ -33,7 +33,11 @@ public sealed class MainViewModel : ObservableObject
     private readonly RelayCommand _togglePinCommand;
     private readonly RelayCommand _previousMonthCommand;
     private readonly RelayCommand _nextMonthCommand;
+    private RelayCommand<string>? _navigateToCommand;
+    private RelayCommand<TaskItem>? _selectTaskAndStartTimerCommand;
+    private RelayCommand<TaskItem>? _selectTaskForEditCommand;
     private TaskItem? _selectedTask;
+    private string _selectedPage = "Dashboard";
     private string _taskTitle = string.Empty;
     private string _taskDescription = string.Empty;
     private string _taskCategory = string.Empty;
@@ -126,6 +130,31 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand TogglePinCommand => _togglePinCommand;
     public RelayCommand PreviousMonthCommand => _previousMonthCommand;
     public RelayCommand NextMonthCommand => _nextMonthCommand;
+
+    public RelayCommand<string> NavigateToCommand =>
+        _navigateToCommand ??= new RelayCommand<string>(page => SelectedPage = page ?? "Dashboard");
+
+    public RelayCommand<TaskItem> SelectTaskAndStartTimerCommand =>
+        _selectTaskAndStartTimerCommand ??= new RelayCommand<TaskItem>(task =>
+        {
+            if (task is null) return;
+            SelectedTask = task;
+            StartOrPauseTimer();
+        });
+
+    public RelayCommand<TaskItem> SelectTaskForEditCommand =>
+        _selectTaskForEditCommand ??= new RelayCommand<TaskItem>(task =>
+        {
+            if (task is null) return;
+            SelectedTask = task;
+            SelectedPage = "Tasks";
+        });
+
+    public string SelectedPage
+    {
+        get => _selectedPage;
+        set => SetProperty(ref _selectedPage, value);
+    }
 
     public TaskItem? SelectedTask
     {
@@ -389,6 +418,50 @@ public sealed class MainViewModel : ObservableObject
         ? "No task selected"
         : $"{SelectedTask.WorkedTimeDisplay} tracked · {SelectedTask.DaysWorkedCount} active days · {SelectedTask.PomodoroProgress} sessions";
 
+    public string GreetingText => DateTime.Now.Hour switch
+    {
+        < 12 => "Good morning, User",
+        < 17 => "Good afternoon, User",
+        _ => "Good evening, User"
+    };
+
+    public int ActiveTasksCount => ActiveTasks.Count;
+
+    public bool HasFeaturedTask => ActiveTasks.Count > 0;
+
+    public bool HasNoFeaturedTask => ActiveTasks.Count == 0;
+
+    public TaskItem? FeaturedTask => SelectedTask is not null && !SelectedTask.IsCompleted
+        ? SelectedTask
+        : ActiveTasks.OrderByDescending(t => t.Priority).FirstOrDefault();
+
+    public int TodayPomodoroCount => GetAllTasks()
+        .SelectMany(t => t.WorkLogs)
+        .Count(log => log.StartedAt.Date == DateTime.Today);
+
+    public string TodayFocusedHoursText
+    {
+        get
+        {
+            var totalMinutes = GetAllTasks()
+                .SelectMany(t => t.WorkLogs)
+                .Where(log => log.StartedAt.Date == DateTime.Today)
+                .Sum(log => log.Minutes);
+            return $"{totalMinutes / 60 + totalMinutes % 60 / 60.0:F1}h";
+        }
+    }
+
+    public int TodayCompletedCount => ArchivedTasks
+        .Count(t => t.LastWorkedOn?.Date == DateTime.Today);
+
+    public IEnumerable<TaskItem> TodayCompletedItems => ArchivedTasks
+        .Where(t => t.LastWorkedOn?.Date == DateTime.Today)
+        .Take(5);
+
+    public bool HasTodayCompletedItems => TodayCompletedCount > 0;
+
+    public bool HasNoTodayCompletedItems => TodayCompletedCount == 0;
+
     public void StartNextPomodoroFromNotification()
     {
         if (SelectedTask is null || SelectedTask.IsCompleted)
@@ -434,6 +507,7 @@ public sealed class MainViewModel : ObservableObject
         RefreshCalendar();
         RefreshReports();
         OnPropertyChanged(nameof(SelectedTaskStats));
+        RefreshDashboardStats();
     }
 
     private void DeleteSelectedTask()
@@ -449,6 +523,7 @@ public sealed class MainViewModel : ObservableObject
         ClearTaskDraft();
         RefreshCalendar();
         RefreshReports();
+        RefreshDashboardStats();
     }
 
     private void ToggleTaskState()
@@ -478,6 +553,7 @@ public sealed class MainViewModel : ObservableObject
         RefreshCalendar();
         RefreshReports();
         OnPropertyChanged(nameof(SelectedTaskStats));
+        RefreshDashboardStats();
     }
 
     private void StartOrPauseTimer()
@@ -619,6 +695,7 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(SelectedTaskStats));
             RefreshCalendar();
             RefreshReports();
+            RefreshDashboardStats();
             StartBreakSession();
             NotificationRequested?.Invoke(this, new NotificationRequestEventArgs(
                 "Pomodoro complete",
@@ -633,6 +710,20 @@ public sealed class MainViewModel : ObservableObject
             "Break complete",
             "Your next Pomodoro is ready.",
             NotificationAction.StartNextPomodoro));
+    }
+
+    private void RefreshDashboardStats()
+    {
+        OnPropertyChanged(nameof(ActiveTasksCount));
+        OnPropertyChanged(nameof(HasFeaturedTask));
+        OnPropertyChanged(nameof(HasNoFeaturedTask));
+        OnPropertyChanged(nameof(FeaturedTask));
+        OnPropertyChanged(nameof(TodayPomodoroCount));
+        OnPropertyChanged(nameof(TodayFocusedHoursText));
+        OnPropertyChanged(nameof(TodayCompletedCount));
+        OnPropertyChanged(nameof(TodayCompletedItems));
+        OnPropertyChanged(nameof(HasTodayCompletedItems));
+        OnPropertyChanged(nameof(HasNoTodayCompletedItems));
     }
 
     private void RefreshCalendar()
@@ -824,7 +915,9 @@ public sealed class CalendarDayViewModel(DateTime date, bool isCurrentMonth, boo
     public bool IsToday { get; } = isToday;
     public IReadOnlyList<CalendarTaskEntryViewModel> Entries { get; } = entries;
     public string DayLabel => Date.Day.ToString();
-    public string BackgroundHex => IsToday ? "#FEF3C7" : IsCurrentMonth ? "#FFFFFF" : "#F3F4F6";
+    public string BackgroundHex => IsToday ? "#DBEAFE" : IsCurrentMonth ? "#FFFFFF" : "#F9FAFB";
+    public string DayTextColor => IsToday ? "#2563EB" : IsCurrentMonth ? "#111827" : "#9CA3AF";
+    public string BorderColor => IsToday ? "#93C5FD" : "#F3F4F6";
 }
 
 public sealed class ReportBarItem(string label, int minutes, string colorHex, double barWidth)

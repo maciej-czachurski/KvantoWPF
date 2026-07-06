@@ -5,340 +5,973 @@
         Title="Kvanto"
         Width="1400"
         Height="920"
-        MinWidth="1200"
-        MinHeight="800"
-        Background="#F3F4F6">
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <Style x:Key="CardBorderStyle" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="CornerRadius" Value="18" />
-            <Setter Property="Padding" Value="18" />
-            <Setter Property="Margin" Value="0,0,0,16" />
-        </Style>
-    </Window.Resources>
+        MinWidth="1100"
+        MinHeight="700"
+        Background="{StaticResource BackgroundBrush}">
 
-    <DockPanel Margin="20">
-        <StatusBar DockPanel.Dock="Bottom" Margin="0,12,0,0">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- STATUS BAR -->
+        <StatusBar Grid.Row="1" Height="32">
             <StatusBarItem>
-                <TextBlock Text="{Binding StatusBarText}" />
+                <TextBlock Text="{Binding StatusBarText}" FontSize="12"/>
             </StatusBarItem>
-            <Separator />
+            <Separator/>
             <StatusBarItem>
-                <TextBlock Text="Ctrl+Alt+S Start/Pause · Ctrl+Alt+N Skip · Ctrl+Alt+K Show window" />
+                <TextBlock Text="Ctrl+Alt+S Start/Pause · Ctrl+Alt+N Skip · Ctrl+Alt+K Show window"
+                           FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
             </StatusBarItem>
         </StatusBar>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <Grid Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="Kvanto" FontSize="34" FontWeight="Bold" Foreground="#111827" />
-                        <TextBlock Text="Modern daily task tracker with Pomodoro, calendar, reports, tray control, and compact overlay." FontSize="15" Foreground="#4B5563" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="Open compact overlay" Command="{Binding OpenCompactViewCommand}" Margin="0,0,10,0" Padding="18,10" />
-                        <Button Content="{Binding PinText}" Command="{Binding TogglePinCommand}" Padding="18,10" />
-                    </StackPanel>
-                </Grid>
+        <!-- MAIN LAYOUT: Sidebar + Content -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="72"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="400" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,20,16">
-                        <StackPanel>
-                            <TextBlock Text="Pomodoro Timer" FontSize="22" FontWeight="Bold" Foreground="#111827" />
-                            <TextBlock Text="{Binding SelectedTask.Title, TargetNullValue=Select a task to begin}" Margin="0,6,0,14" FontSize="15" Foreground="#6B7280" />
-                            <controls:CircularProgressBar Value="{Binding ProgressValue}"
-                                                          AccentBrush="{Binding SessionBrush}"
-                                                          CenterText="{Binding TimeRemainingText}"
-                                                          Caption="{Binding SessionLabel}" />
-                            <UniformGrid Columns="3" Margin="0,18,0,0">
-                                <Button Content="{Binding StartPauseText}" Command="{Binding StartPauseCommand}" Margin="6" Padding="10" />
-                                <Button Content="Stop" Command="{Binding StopCommand}" Margin="6" Padding="10" />
-                                <Button Content="Skip" Command="{Binding SkipCommand}" Margin="6" Padding="10" />
-                            </UniformGrid>
-                            <TextBlock Text="{Binding SelectedTaskStats}" Margin="0,16,0,0" TextWrapping="Wrap" Foreground="#4B5563" />
-                            <TextBlock Text="Tray icon turns red in focus mode and green on breaks." Margin="0,8,0,0" Foreground="#6B7280" />
-                        </StackPanel>
+            <!-- ===== LEFT SIDEBAR ===== -->
+            <Border Background="White" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="0,0,1,0">
+                <DockPanel>
+                    <!-- App logo -->
+                    <Border DockPanel.Dock="Top" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Width="42" Height="42" Background="{StaticResource AccentBrush}" CornerRadius="12" VerticalAlignment="Center">
+                            <TextBlock Text="&#xE762;" FontFamily="Segoe MDL2 Assets" FontSize="20"
+                                       Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
                     </Border>
 
-                    <StackPanel Grid.Column="1">
-                        <Border Style="{StaticResource CardBorderStyle}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="Work" FontWeight="Bold" Foreground="#374151" />
-                                    <TextBox Text="{Binding WorkMinutes}" Margin="0,8,10,0" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Short break" FontWeight="Bold" Foreground="#374151" />
-                                    <TextBox Text="{Binding ShortBreakMinutes}" Margin="0,8,10,0" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Long break" FontWeight="Bold" Foreground="#374151" />
-                                    <TextBox Text="{Binding LongBreakMinutes}" Margin="0,8,10,0" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="3">
-                                    <TextBlock Text="Long break every" FontWeight="Bold" Foreground="#374151" />
-                                    <TextBox Text="{Binding LongBreakFrequency}" Margin="0,8,0,0" />
-                                </StackPanel>
-                            </Grid>
+                    <!-- Bottom nav: settings -->
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,16">
+                        <Button Command="{Binding NavigateToCommand}" CommandParameter="Settings" ToolTip="Settings &amp; Shortcuts">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedPage}" Value="Settings">
+                                            <Setter Property="Background" Value="#EFF6FF"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="18">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Text" Value="&#xE713;"/>
+                                        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPage}" Value="Settings">
+                                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Main nav items -->
+                    <StackPanel Margin="0,4,0,0">
+
+                        <!-- Dashboard -->
+                        <Button Command="{Binding NavigateToCommand}" CommandParameter="Dashboard" ToolTip="Dashboard">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedPage}" Value="Dashboard">
+                                            <Setter Property="Background" Value="#EFF6FF"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="18">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Text" Value="&#xE80F;"/>
+                                        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPage}" Value="Dashboard">
+                                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+
+                        <!-- Tasks -->
+                        <Button Command="{Binding NavigateToCommand}" CommandParameter="Tasks" ToolTip="Tasks">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedPage}" Value="Tasks">
+                                            <Setter Property="Background" Value="#EFF6FF"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="18">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Text" Value="&#xE9D5;"/>
+                                        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPage}" Value="Tasks">
+                                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+
+                        <!-- Pomodoro Timer -->
+                        <Button Command="{Binding NavigateToCommand}" CommandParameter="Timer" ToolTip="Pomodoro Timer">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedPage}" Value="Timer">
+                                            <Setter Property="Background" Value="#EFF6FF"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="18">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Text" Value="&#xE916;"/>
+                                        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPage}" Value="Timer">
+                                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+
+                        <!-- Calendar -->
+                        <Button Command="{Binding NavigateToCommand}" CommandParameter="Calendar" ToolTip="Calendar">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedPage}" Value="Calendar">
+                                            <Setter Property="Background" Value="#EFF6FF"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="18">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Text" Value="&#xE787;"/>
+                                        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPage}" Value="Calendar">
+                                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+
+                        <!-- Reports -->
+                        <Button Command="{Binding NavigateToCommand}" CommandParameter="Reports" ToolTip="Reports">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedPage}" Value="Reports">
+                                            <Setter Property="Background" Value="#EFF6FF"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="18">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Text" Value="&#xE9F9;"/>
+                                        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPage}" Value="Reports">
+                                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ===== CONTENT AREA ===== -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="56"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- TOP BAR -->
+                <Border Background="White" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="0,0,0,1">
+                    <Grid Margin="24,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Kvanto" FontSize="18" FontWeight="Bold"
+                                   Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+
+                        <!-- Search placeholder -->
+                        <Border Grid.Column="1" Margin="32,0" VerticalAlignment="Center"
+                                Background="#F9FAFB" CornerRadius="8"
+                                BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1"
+                                Padding="12,7">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="13"
+                                           Foreground="{StaticResource MutedTextBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Search tasks, categories…" FontSize="13"
+                                           Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
                         </Border>
 
-                        <TabControl Background="Transparent" BorderThickness="0">
-                            <TabItem Header="Tasks">
-                                <Grid Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="340" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,20,0">
-                                        <StackPanel>
-                                            <TextBlock Text="Task Details" FontSize="20" FontWeight="Bold" />
-                                            <TextBlock Text="Title" Margin="0,14,0,4" />
-                                            <TextBox Text="{Binding TaskTitle, UpdateSourceTrigger=PropertyChanged}" />
-                                            <TextBlock Text="Description" Margin="0,14,0,4" />
-                                            <TextBox Text="{Binding TaskDescription, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="90" TextWrapping="Wrap" />
-                                            <TextBlock Text="Category" Margin="0,14,0,4" />
-                                            <TextBox Text="{Binding TaskCategory, UpdateSourceTrigger=PropertyChanged}" />
-                                            <TextBlock Text="Priority" Margin="0,14,0,4" />
-                                            <ComboBox ItemsSource="{Binding PriorityOptions}" SelectedItem="{Binding TaskPriority}" />
-                                            <TextBlock Text="Estimated Pomodoros" Margin="0,14,0,4" />
-                                            <TextBox Text="{Binding EstimatedPomodoros}" />
-                                            <UniformGrid Columns="2" Margin="0,18,0,0">
-                                                <Button Content="New" Command="{Binding NewTaskCommand}" Margin="6" Padding="10" />
-                                                <Button Content="Save" Command="{Binding SaveTaskCommand}" Margin="6" Padding="10" />
-                                            </UniformGrid>
-                                            <UniformGrid Columns="2" Margin="0,8,0,0">
-                                                <Button Content="Archive / Restore" Command="{Binding ToggleTaskStateCommand}" Margin="6" Padding="10" />
-                                                <Button Content="Delete" Command="{Binding DeleteTaskCommand}" Margin="6" Padding="10" />
-                                            </UniformGrid>
+                        <!-- Overlay button -->
+                        <Button Grid.Column="2" Command="{Binding OpenCompactViewCommand}"
+                                Padding="14,6" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE78B;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                           Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Overlay" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- ===== PAGE CONTENT ===== -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid Margin="28,24,28,28">
+
+                        <!-- ======= DASHBOARD PAGE ======= -->
+                        <Grid Visibility="{Binding SelectedPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Dashboard}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="300"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- LEFT: main content -->
+                            <StackPanel Margin="0,0,20,0">
+
+                                <!-- Header row -->
+                                <Grid Margin="0,0,0,22">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding GreetingText}" FontSize="26" FontWeight="Bold"
+                                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <TextBlock Text="You have " FontSize="14"
+                                                       Foreground="{StaticResource SecondaryTextBrush}"/>
+                                            <TextBlock Text="{Binding ActiveTasksCount}" FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                                            <TextBlock Text=" active tasks for today." FontSize="14"
+                                                       Foreground="{StaticResource SecondaryTextBrush}"/>
                                         </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,0">
-                                        <TabControl>
-                                            <TabItem Header="Active tasks">
-                                                <ListView ItemsSource="{Binding ActiveTasks}" SelectedItem="{Binding SelectedTask}" Margin="0,10,0,0">
-                                                    <ListView.View>
-                                                        <GridView>
-                                                            <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Title}" Width="180" />
-                                                            <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Category}" Width="120" />
-                                                            <GridViewColumn Header="Priority" DisplayMemberBinding="{Binding Priority}" Width="90" />
-                                                            <GridViewColumn Header="Tracked" DisplayMemberBinding="{Binding WorkedTimeDisplay}" Width="90" />
-                                                            <GridViewColumn Header="Days" DisplayMemberBinding="{Binding DaysWorkedCount}" Width="70" />
-                                                            <GridViewColumn Header="Pomodoros" DisplayMemberBinding="{Binding PomodoroProgress}" Width="110" />
-                                                        </GridView>
-                                                    </ListView.View>
-                                                </ListView>
-                                            </TabItem>
-                                            <TabItem Header="Archived tasks">
-                                                <ListView ItemsSource="{Binding ArchivedTasks}" SelectedItem="{Binding SelectedTask}" Margin="0,10,0,0">
-                                                    <ListView.View>
-                                                        <GridView>
-                                                            <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Title}" Width="180" />
-                                                            <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Category}" Width="120" />
-                                                            <GridViewColumn Header="Priority" DisplayMemberBinding="{Binding Priority}" Width="90" />
-                                                            <GridViewColumn Header="Tracked" DisplayMemberBinding="{Binding WorkedTimeDisplay}" Width="90" />
-                                                            <GridViewColumn Header="Days" DisplayMemberBinding="{Binding DaysWorkedCount}" Width="70" />
-                                                            <GridViewColumn Header="Pomodoros" DisplayMemberBinding="{Binding PomodoroProgress}" Width="110" />
-                                                        </GridView>
-                                                    </ListView.View>
-                                                </ListView>
-                                            </TabItem>
-                                        </TabControl>
-                                    </Border>
+                                    </StackPanel>
+                                    <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
+                                        <Button Margin="0,0,8,0" Padding="12,6">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xE71C;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                                          Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Filter" FontSize="12"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Padding="12,6">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xE8CB;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                                          Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Sort" FontSize="12"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
                                 </Grid>
-                            </TabItem>
 
-                            <TabItem Header="Calendar">
-                                <StackPanel Margin="0,10,0,0">
-                                    <Border Style="{StaticResource CardBorderStyle}">
-                                        <DockPanel>
-                                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                                                <Button Content="◀" Command="{Binding PreviousMonthCommand}" Width="44" Margin="0,0,8,0" />
-                                                <Button Content="▶" Command="{Binding NextMonthCommand}" Width="44" />
-                                            </StackPanel>
-                                            <TextBlock Text="{Binding DisplayMonthLabel}" FontSize="22" FontWeight="Bold" />
-                                        </DockPanel>
-                                    </Border>
-
-                                    <UniformGrid Columns="7" Margin="0,0,0,8">
-                                        <TextBlock Text="Mon" FontWeight="Bold" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Tue" FontWeight="Bold" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Wed" FontWeight="Bold" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Thu" FontWeight="Bold" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Fri" FontWeight="Bold" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Sat" FontWeight="Bold" HorizontalAlignment="Center" />
-                                        <TextBlock Text="Sun" FontWeight="Bold" HorizontalAlignment="Center" />
-                                    </UniformGrid>
-
-                                    <ItemsControl ItemsSource="{Binding CalendarDays}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <UniformGrid Columns="7" Rows="6" />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Background="{Binding BackgroundHex}"
-                                                        BorderBrush="#D1D5DB"
-                                                        BorderThickness="1"
-                                                        Padding="8"
-                                                        Margin="2"
-                                                        MinHeight="110">
-                                                    <StackPanel>
-                                                        <TextBlock Text="{Binding DayLabel}" FontWeight="Bold" Foreground="#111827" />
-                                                        <ItemsControl ItemsSource="{Binding Entries}">
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate>
-                                                                    <Border Background="{Binding ColorHex}" CornerRadius="8" Margin="0,6,0,0" Padding="6,4">
-                                                                        <TextBlock Text="{Binding Display}" Foreground="White" FontSize="11" TextWrapping="Wrap" />
-                                                                    </Border>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </TabItem>
-
-                            <TabItem Header="Reports">
-                                <StackPanel Margin="0,10,0,0">
-                                    <Border Style="{StaticResource CardBorderStyle}">
-                                        <WrapPanel VerticalAlignment="Center">
-                                            <StackPanel Margin="0,0,16,0">
-                                                <TextBlock Text="Range" />
-                                                <ComboBox Width="160" ItemsSource="{Binding ReportRangeOptions}" SelectedItem="{Binding SelectedReportRange}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="0,0,16,0" Visibility="{Binding IsCustomRange, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                <TextBlock Text="Start" />
-                                                <DatePicker SelectedDate="{Binding ReportStartDate}" Width="150" />
-                                            </StackPanel>
-                                            <StackPanel Visibility="{Binding IsCustomRange, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                <TextBlock Text="End" />
-                                                <DatePicker SelectedDate="{Binding ReportEndDate}" Width="150" />
-                                            </StackPanel>
-                                        </WrapPanel>
-                                    </Border>
-
-                                    <UniformGrid Columns="5" Margin="0,0,0,16">
-                                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Total Time" Foreground="#6B7280" />
-                                                <TextBlock Text="{Binding ReportTotalMinutes, StringFormat={}{0} min}" FontSize="24" FontWeight="Bold" />
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Sessions" Foreground="#6B7280" />
-                                                <TextBlock Text="{Binding ReportSessionCount}" FontSize="24" FontWeight="Bold" />
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Active Days" Foreground="#6B7280" />
-                                                <TextBlock Text="{Binding ReportActiveDays}" FontSize="24" FontWeight="Bold" />
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Daily Average" Foreground="#6B7280" />
-                                                <TextBlock Text="{Binding ReportDailyAverage}" FontSize="24" FontWeight="Bold" />
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Style="{StaticResource CardBorderStyle}" Margin="0">
-                                            <StackPanel>
-                                                <TextBlock Text="Current Streak" Foreground="#6B7280" />
-                                                <TextBlock Text="{Binding ReportCurrentStreak, StringFormat={}{0} days}" FontSize="24" FontWeight="Bold" />
-                                            </StackPanel>
-                                        </Border>
-                                    </UniformGrid>
-
+                                <!-- Featured Task Card -->
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20" Padding="0"
+                                        Visibility="{Binding HasFeaturedTask, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="5"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Margin="0,0,20,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Per-task distribution" FontSize="20" FontWeight="Bold" Margin="0,0,0,12" />
-                                                <ItemsControl ItemsSource="{Binding TaskReportItems}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel Margin="0,0,0,12">
-                                                                <DockPanel>
-                                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" DockPanel.Dock="Left" />
-                                                                    <TextBlock Text="{Binding ValueLabel}" DockPanel.Dock="Right" />
-                                                                </DockPanel>
-                                                                <Border Background="#E5E7EB" Height="18" CornerRadius="9" Margin="0,6,0,0">
-                                                                    <Border Background="{Binding ColorHex}" Width="{Binding BarWidth}" Height="18" CornerRadius="9" HorizontalAlignment="Left" />
-                                                                </Border>
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
-                                        </Border>
+                                        <!-- Left accent bar -->
+                                        <Border Grid.Column="0" Background="{StaticResource AccentBrush}" CornerRadius="11,0,0,11"/>
 
-                                        <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Margin="0">
-                                            <StackPanel>
-                                                <TextBlock Text="Daily activity" FontSize="20" FontWeight="Bold" Margin="0,0,0,12" />
-                                                <ItemsControl ItemsSource="{Binding DailyReportItems}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel Margin="0,0,0,12">
-                                                                <DockPanel>
-                                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" DockPanel.Dock="Left" />
-                                                                    <TextBlock Text="{Binding ValueLabel}" DockPanel.Dock="Right" />
-                                                                </DockPanel>
-                                                                <Border Background="#DBEAFE" Height="18" CornerRadius="9" Margin="0,6,0,0">
-                                                                    <Border Background="{Binding ColorHex}" Width="{Binding BarWidth}" Height="18" CornerRadius="9" HorizontalAlignment="Left" />
-                                                                </Border>
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
+                                        <!-- Task info -->
+                                        <StackPanel Grid.Column="1" Margin="20,20,16,20">
+                                            <!-- Badges -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                                <Border Background="#FFF7ED" CornerRadius="5" Padding="8,3" Margin="0,0,8,0">
+                                                    <TextBlock FontSize="11" FontWeight="Bold" Foreground="#C2410C">
+                                                        <Run Text="PRIORITY "/>
+                                                        <Run Text="{Binding FeaturedTask.Priority, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                </Border>
+                                                <Border Background="#F0FDF4" CornerRadius="5" Padding="8,3">
+                                                    <TextBlock Text="{Binding FeaturedTask.Category}" FontSize="11"
+                                                              FontWeight="SemiBold" Foreground="#15803D"/>
+                                                </Border>
                                             </StackPanel>
-                                        </Border>
+
+                                            <!-- Title -->
+                                            <TextBlock Text="{Binding FeaturedTask.Title}" FontSize="22" FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryTextBrush}" TextWrapping="Wrap"
+                                                       Margin="0,0,0,8"/>
+
+                                            <!-- Description -->
+                                            <TextBlock Text="{Binding FeaturedTask.Description}" FontSize="13"
+                                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                                       TextWrapping="Wrap" MaxHeight="44" Margin="0,0,0,14"/>
+
+                                            <!-- Stats row -->
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets" FontSize="13"
+                                                          Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                <TextBlock Text="{Binding FeaturedTask.PomodoroProgress}" FontSize="13"
+                                                          Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,20,0"/>
+                                                <TextBlock Text="{Binding FeaturedTask.WorkedTimeDisplay}" FontSize="13"
+                                                          Foreground="{StaticResource MutedTextBrush}" Margin="0,0,6,0"/>
+                                                <TextBlock Text="tracked" FontSize="13"
+                                                          Foreground="{StaticResource MutedTextBrush}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Action buttons -->
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,20,20,20">
+                                            <Button Style="{StaticResource AccentButtonStyle}"
+                                                    Command="{Binding SelectTaskAndStartTimerCommand}"
+                                                    CommandParameter="{Binding FeaturedTask}"
+                                                    Padding="18,10" Margin="0,0,0,8" MinWidth="150">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                                              Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding StartPauseText}" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Command="{Binding SelectTaskForEditCommand}"
+                                                    CommandParameter="{Binding FeaturedTask}"
+                                                    Padding="18,10" MinWidth="150">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                                              Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Edit Task" FontSize="13"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
                                     </Grid>
-                                </StackPanel>
-                            </TabItem>
+                                </Border>
 
-                            <TabItem Header="Settings &amp; Shortcuts">
-                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,10,0,0">
-                                    <StackPanel>
-                                        <TextBlock Text="Windows 11 workflow helpers" FontSize="20" FontWeight="Bold" />
-                                        <TextBlock Text="• Ctrl+Alt+S starts or pauses the current Pomodoro." Margin="0,16,0,0" />
-                                        <TextBlock Text="• Ctrl+Alt+N skips to the next session." Margin="0,8,0,0" />
-                                        <TextBlock Text="• Ctrl+Alt+K restores the Kvanto window from anywhere." Margin="0,8,0,0" />
-                                        <TextBlock Text="• Closing the main window hides it to the system tray instead of exiting." Margin="0,8,0,0" />
-                                        <TextBlock Text="• The tray menu exposes open, start/pause, stop, skip, compact overlay, and exit." Margin="0,8,0,0" />
-                                        <TextBlock Text="• Session-complete notifications prompt for the next action." Margin="0,8,0,0" />
+                                <!-- No tasks placeholder -->
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20" TextBlock.Foreground="{StaticResource SecondaryTextBrush}"
+                                        Visibility="{Binding HasNoFeaturedTask, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel HorizontalAlignment="Center" Margin="0,16">
+                                        <TextBlock Text="&#xE9D5;" FontFamily="Segoe MDL2 Assets" FontSize="32"
+                                                   Foreground="{StaticResource MutedTextBrush}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                        <TextBlock Text="No active tasks yet" FontSize="16" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}"/>
+                                        <TextBlock Text="Go to the Tasks page to create your first task." FontSize="13"
+                                                   HorizontalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="0,6,0,0"/>
+                                        <Button Style="{StaticResource AccentButtonStyle}" Margin="0,16,0,0"
+                                                Command="{Binding NavigateToCommand}" CommandParameter="Tasks"
+                                                Padding="20,10" HorizontalAlignment="Center">
+                                            <TextBlock Text="Create Task" Foreground="White"/>
+                                        </Button>
                                     </StackPanel>
                                 </Border>
-                            </TabItem>
-                        </TabControl>
-                    </StackPanel>
-                </Grid>
-            </StackPanel>
-        </ScrollViewer>
-    </DockPanel>
+
+                                <!-- Active Tasks list -->
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                        <TextBlock Text="Active Tasks" FontSize="17" FontWeight="Bold"
+                                                   Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                        <Border Background="#EFF6FF" CornerRadius="10" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ActiveTasksCount}" FontSize="12" FontWeight="Bold"
+                                                       Foreground="{StaticResource AccentBrush}"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <ListBox ItemsSource="{Binding ActiveTasks}" SelectedItem="{Binding SelectedTask}"
+                                             Background="Transparent" BorderThickness="0" Padding="0">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="White" CornerRadius="10" Margin="0,0,0,8" Padding="16,14"
+                                                        BorderThickness="1">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                           <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                                                           <Style.Triggers>
+                                                               <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                                   <Setter Property="BorderBrush" Value="#93C5FD"/>
+                                                                   <Setter Property="Background" Value="#EFF6FF"/>
+                                                               </DataTrigger>
+                                                           </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                           <ColumnDefinition Width="8"/>
+                                                           <ColumnDefinition Width="*"/>
+                                                           <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Color indicator -->
+                                                        <Border Grid.Column="0" Width="4" CornerRadius="2" Margin="0,0,12,0"
+                                                               Background="{Binding ColorHex}"/>
+
+                                                        <!-- Task info -->
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                           <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
+                                                                      Foreground="#111827"/>
+                                                           <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                                               <Border Background="#F3F4F6" CornerRadius="4" Padding="7,2" Margin="0,0,6,0">
+                                                                   <TextBlock Text="{Binding Category}" FontSize="11"
+                                                                              Foreground="{StaticResource SecondaryTextBrush}"/>
+                                                               </Border>
+                                                               <Border Background="#FEF3C7" CornerRadius="4" Padding="7,2" Margin="0,0,6,0">
+                                                                   <TextBlock Text="{Binding Priority}" FontSize="11" Foreground="#92400E"/>
+                                                               </Border>
+                                                               <TextBlock Text="{Binding PomodoroProgress}" FontSize="11"
+                                                                          Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
+                                                           </StackPanel>
+                                                        </StackPanel>
+
+                                                        <!-- Worked time -->
+                                                        <TextBlock Grid.Column="2" Text="{Binding WorkedTimeDisplay}"
+                                                                  FontSize="12" Foreground="{StaticResource MutedTextBrush}"
+                                                                  VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- RIGHT: Stats panel -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Top">
+
+                                <!-- Productivity Stats card -->
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                            <TextBlock Text="&#xE9F9;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                                       Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Productivity Stats" FontSize="15" FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Daily Goal progress -->
+                                        <DockPanel Margin="0,0,0,6">
+                                            <TextBlock Text="{Binding TodayPomodoroCount, StringFormat={}{0}/8}"
+                                                       DockPanel.Dock="Right" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource AccentBrush}"/>
+                                            <TextBlock Text="Daily Goal (Pomodoros)" FontSize="12"
+                                                       Foreground="{StaticResource SecondaryTextBrush}"/>
+                                        </DockPanel>
+                                        <ProgressBar Value="{Binding TodayPomodoroCount}" Maximum="8" Margin="0,0,0,16"/>
+
+                                        <!-- Stats grid -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Background="#F9FAFB" CornerRadius="8" Padding="12,10" Margin="0,0,6,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding TodayCompletedCount}" FontSize="24" FontWeight="Bold"
+                                                              Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                    <TextBlock Text="Tasks Completed" FontSize="11"
+                                                              Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Grid.Column="1" Background="#F9FAFB" CornerRadius="8" Padding="12,10" Margin="6,0,0,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding TodayFocusedHoursText}" FontSize="24" FontWeight="Bold"
+                                                              Foreground="{StaticResource AccentBrush}"/>
+                                                    <TextBlock Text="Focused Time" FontSize="11"
+                                                              Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Completed Today card -->
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <DockPanel Margin="0,0,0,14">
+                                            <TextBlock Text="Completed Today" FontSize="15" FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource GhostButtonStyle}"
+                                                    Command="{Binding NavigateToCommand}" CommandParameter="Tasks"
+                                                    Padding="6,3" VerticalAlignment="Center">
+                                                <TextBlock Text="View all" FontSize="12" Foreground="{StaticResource AccentBrush}"/>
+                                            </Button>
+                                        </DockPanel>
+
+                                        <ItemsControl ItemsSource="{Binding TodayCompletedItems}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                        <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                                                  Foreground="#10B981" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                        <TextBlock Text="{Binding Title}" FontSize="13"
+                                                                  Foreground="{StaticResource MutedTextBrush}"
+                                                                  TextDecorations="Strikethrough" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="No completed tasks yet today." FontSize="13" TextAlignment="Center"
+                                                   Foreground="{StaticResource MutedTextBrush}" Margin="0,4"
+                                                   Visibility="{Binding HasNoTodayCompletedItems, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Timer status card -->
+                                <Border Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                            <TextBlock Text="&#xE916;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                                       Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Pomodoro" FontSize="15" FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding TimeRemainingText}" FontSize="32" FontWeight="Bold"
+                                                   Foreground="{StaticResource PrimaryTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,4"/>
+                                        <TextBlock Text="{Binding SessionLabel}" FontSize="12"
+                                                   Foreground="{StaticResource SecondaryTextBrush}" HorizontalAlignment="Center" Margin="0,0,0,14"/>
+                                        <UniformGrid Columns="3" Margin="0,4,0,0">
+                                            <Button Content="{Binding StartPauseText}" Command="{Binding StartPauseCommand}"
+                                                    Style="{StaticResource AccentButtonStyle}" Margin="0,0,4,0" Padding="8,7"/>
+                                            <Button Content="Stop" Command="{Binding StopCommand}" Margin="2,0,2,0" Padding="8,7"/>
+                                            <Button Content="Skip" Command="{Binding SkipCommand}" Margin="4,0,0,0" Padding="8,7"/>
+                                        </UniformGrid>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- ======= TASKS PAGE ======= -->
+                        <Grid Visibility="{Binding SelectedPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Tasks}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="320"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Task detail form -->
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,16,0">
+                                <StackPanel>
+                                    <TextBlock Text="Task Details" FontSize="18" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                                    <TextBlock Text="Title" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                    <TextBox Text="{Binding TaskTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Description" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                    <TextBox Text="{Binding TaskDescription, UpdateSourceTrigger=PropertyChanged}"
+                                             AcceptsReturn="True" Height="88" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Category" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                    <TextBox Text="{Binding TaskCategory, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Priority" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                    <ComboBox ItemsSource="{Binding PriorityOptions}" SelectedItem="{Binding TaskPriority}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Estimated Pomodoros" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                    <TextBox Text="{Binding EstimatedPomodoros}" Margin="0,0,0,16"/>
+                                    <UniformGrid Columns="2" Margin="0,0,0,8">
+                                        <Button Content="New" Command="{Binding NewTaskCommand}" Margin="0,0,4,0" Padding="10,8"/>
+                                        <Button Content="Save" Command="{Binding SaveTaskCommand}" Style="{StaticResource AccentButtonStyle}"
+                                                Margin="4,0,0,0" Padding="10,8"/>
+                                    </UniformGrid>
+                                    <UniformGrid Columns="2">
+                                        <Button Content="Archive / Restore" Command="{Binding ToggleTaskStateCommand}" Margin="0,0,4,0" Padding="10,8"/>
+                                        <Button Content="Delete" Command="{Binding DeleteTaskCommand}" Margin="4,0,0,0" Padding="10,8"/>
+                                    </UniformGrid>
+                                    <Border Background="#F9FAFB" CornerRadius="8" Padding="12,10" Margin="0,16,0,0"
+                                            Visibility="{Binding HasFeaturedTask, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding SelectedTaskStats}" FontSize="12"
+                                                   Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap"/>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Task list with tabs -->
+                            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Padding="0">
+                                <TabControl Padding="16,12,16,0">
+                                    <TabItem Header="Active Tasks">
+                                        <ListView ItemsSource="{Binding ActiveTasks}" SelectedItem="{Binding SelectedTask}"
+                                                  Margin="0,12,0,0" Background="Transparent" BorderThickness="0">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Title}" Width="180"/>
+                                                    <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Category}" Width="120"/>
+                                                    <GridViewColumn Header="Priority" DisplayMemberBinding="{Binding Priority}" Width="90"/>
+                                                    <GridViewColumn Header="Tracked" DisplayMemberBinding="{Binding WorkedTimeDisplay}" Width="80"/>
+                                                    <GridViewColumn Header="Days" DisplayMemberBinding="{Binding DaysWorkedCount}" Width="60"/>
+                                                    <GridViewColumn Header="Pomodoros" DisplayMemberBinding="{Binding PomodoroProgress}" Width="100"/>
+                                                </GridView>
+                                            </ListView.View>
+                                        </ListView>
+                                    </TabItem>
+                                    <TabItem Header="Archived Tasks">
+                                        <ListView ItemsSource="{Binding ArchivedTasks}" SelectedItem="{Binding SelectedTask}"
+                                                  Margin="0,12,0,0" Background="Transparent" BorderThickness="0">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Title}" Width="180"/>
+                                                    <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Category}" Width="120"/>
+                                                    <GridViewColumn Header="Priority" DisplayMemberBinding="{Binding Priority}" Width="90"/>
+                                                    <GridViewColumn Header="Tracked" DisplayMemberBinding="{Binding WorkedTimeDisplay}" Width="80"/>
+                                                    <GridViewColumn Header="Days" DisplayMemberBinding="{Binding DaysWorkedCount}" Width="60"/>
+                                                    <GridViewColumn Header="Pomodoros" DisplayMemberBinding="{Binding PomodoroProgress}" Width="100"/>
+                                                </GridView>
+                                            </ListView.View>
+                                        </ListView>
+                                    </TabItem>
+                                </TabControl>
+                            </Border>
+                        </Grid>
+
+                        <!-- ======= TIMER PAGE ======= -->
+                        <Grid Visibility="{Binding SelectedPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Timer}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="380"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Pomodoro timer card -->
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,16,0">
+                                <StackPanel>
+                                    <TextBlock Text="Pomodoro Timer" FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding SelectedTask.Title, TargetNullValue=Select a task to begin}"
+                                               FontSize="14" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,20"/>
+                                    <controls:CircularProgressBar Value="{Binding ProgressValue}"
+                                                                 AccentBrush="{Binding SessionBrush}"
+                                                                 CenterText="{Binding TimeRemainingText}"
+                                                                 Caption="{Binding SessionLabel}"
+                                                                 HorizontalAlignment="Center"/>
+                                    <UniformGrid Columns="3" Margin="0,20,0,0">
+                                        <Button Content="{Binding StartPauseText}" Command="{Binding StartPauseCommand}"
+                                                Style="{StaticResource AccentButtonStyle}" Margin="0,0,6,0" Padding="10,9"/>
+                                        <Button Content="Stop" Command="{Binding StopCommand}" Margin="3,0,3,0" Padding="10,9"/>
+                                        <Button Content="Skip" Command="{Binding SkipCommand}" Margin="6,0,0,0" Padding="10,9"/>
+                                    </UniformGrid>
+                                    <Border Background="#F9FAFB" CornerRadius="8" Padding="12,10" Margin="0,16,0,0">
+                                        <TextBlock Text="{Binding SelectedTaskStats}" FontSize="13"
+                                                   Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap"/>
+                                    </Border>
+                                    <TextBlock Text="Tray icon: red = focus, green = break."
+                                               FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Timer settings -->
+                            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Session Durations" FontSize="18" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,20"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,10,0">
+                                            <TextBlock Text="Work (min)" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                            <TextBox Text="{Binding WorkMinutes}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="5,0,10,0">
+                                            <TextBlock Text="Short Break" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                            <TextBox Text="{Binding ShortBreakMinutes}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Margin="5,0,10,0">
+                                            <TextBlock Text="Long Break" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                            <TextBox Text="{Binding LongBreakMinutes}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="3" Margin="5,0,0,0">
+                                            <TextBlock Text="Long Break Every" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                            <TextBox Text="{Binding LongBreakFrequency}"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <TextBlock Text="Select Task for Timer" FontSize="16" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryTextBrush}" Margin="0,24,0,12"/>
+                                    <ListView ItemsSource="{Binding ActiveTasks}" SelectedItem="{Binding SelectedTask}"
+                                              Background="Transparent" BorderThickness="0" MaxHeight="300">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Title}" Width="200"/>
+                                                <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Category}" Width="120"/>
+                                                <GridViewColumn Header="Pomodoros" DisplayMemberBinding="{Binding PomodoroProgress}" Width="100"/>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- ======= CALENDAR PAGE ======= -->
+                        <StackPanel Visibility="{Binding SelectedPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Calendar}">
+
+                            <!-- Month navigation -->
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16" Padding="16,12">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                        <Button Command="{Binding PreviousMonthCommand}" Width="36" Height="36"
+                                                Padding="0" Margin="0,0,8,0">
+                                            <TextBlock Text="&#xE76B;" FontFamily="Segoe MDL2 Assets" FontSize="12"/>
+                                        </Button>
+                                        <Button Command="{Binding NextMonthCommand}" Width="36" Height="36" Padding="0">
+                                            <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="12"/>
+                                        </Button>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding DisplayMonthLabel}" FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                </DockPanel>
+                            </Border>
+
+                            <!-- Day-of-week headers -->
+                            <UniformGrid Columns="7" Margin="0,0,0,4">
+                                <TextBlock Text="Mon" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                <TextBlock Text="Tue" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                <TextBlock Text="Wed" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                <TextBlock Text="Thu" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                <TextBlock Text="Fri" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                <TextBlock Text="Sat" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                <TextBlock Text="Sun" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                            </UniformGrid>
+
+                            <!-- Calendar grid -->
+                            <ItemsControl ItemsSource="{Binding CalendarDays}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="7" Rows="6"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding BackgroundHex}"
+                                                BorderBrush="{Binding BorderColor}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="8"
+                                                Margin="2"
+                                                MinHeight="100">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding DayLabel}" FontWeight="Bold"
+                                                          Foreground="{Binding DayTextColor}" FontSize="13"/>
+                                                <ItemsControl ItemsSource="{Binding Entries}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                           <Border Background="{Binding ColorHex}" CornerRadius="5"
+                                                                   Margin="0,4,0,0" Padding="5,3">
+                                                               <TextBlock Text="{Binding Display}" Foreground="White"
+                                                                          FontSize="10" TextWrapping="Wrap"/>
+                                                           </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- ======= REPORTS PAGE ======= -->
+                        <StackPanel Visibility="{Binding SelectedPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Reports}">
+
+                            <!-- Filter row -->
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16" Padding="16,14">
+                                <WrapPanel>
+                                    <StackPanel Margin="0,0,16,0">
+                                        <TextBlock Text="Range" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                        <ComboBox Width="160" ItemsSource="{Binding ReportRangeOptions}" SelectedItem="{Binding SelectedReportRange}"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,0"
+                                                Visibility="{Binding IsCustomRange, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="Start" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                        <DatePicker SelectedDate="{Binding ReportStartDate}" Width="150"/>
+                                    </StackPanel>
+                                    <StackPanel Visibility="{Binding IsCustomRange, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="End" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                        <DatePicker SelectedDate="{Binding ReportEndDate}" Width="150"/>
+                                    </StackPanel>
+                                </WrapPanel>
+                            </Border>
+
+                            <!-- Stats row -->
+                            <UniformGrid Columns="5" Margin="0,0,0,16">
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Total Time" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding ReportTotalMinutes, StringFormat={}{0} min}" FontSize="22" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Sessions" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding ReportSessionCount}" FontSize="22" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Active Days" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding ReportActiveDays}" FontSize="22" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Daily Average" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding ReportDailyAverage}" FontSize="22" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Current Streak" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding ReportCurrentStreak, StringFormat={}{0} days}" FontSize="22" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+
+                            <!-- Charts row -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Per-task distribution" FontSize="17" FontWeight="Bold"
+                                                   Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                                        <ItemsControl ItemsSource="{Binding TaskReportItems}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="0,0,0,12">
+                                                        <DockPanel>
+                                                           <TextBlock Text="{Binding Label}" FontWeight="SemiBold"
+                                                                      Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                           <TextBlock Text="{Binding ValueLabel}" DockPanel.Dock="Right"
+                                                                      Foreground="{StaticResource SecondaryTextBrush}"/>
+                                                        </DockPanel>
+                                                        <Border Background="#E5E7EB" Height="14" CornerRadius="7" Margin="0,6,0,0">
+                                                           <Border Background="{Binding ColorHex}" Width="{Binding BarWidth}"
+                                                                   Height="14" CornerRadius="7" HorizontalAlignment="Left"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Daily activity" FontSize="17" FontWeight="Bold"
+                                                   Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                                        <ItemsControl ItemsSource="{Binding DailyReportItems}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="0,0,0,12">
+                                                        <DockPanel>
+                                                           <TextBlock Text="{Binding Label}" FontWeight="SemiBold"
+                                                                      Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                           <TextBlock Text="{Binding ValueLabel}" DockPanel.Dock="Right"
+                                                                      Foreground="{StaticResource SecondaryTextBrush}"/>
+                                                        </DockPanel>
+                                                        <Border Background="#DBEAFE" Height="14" CornerRadius="7" Margin="0,6,0,0">
+                                                           <Border Background="{Binding ColorHex}" Width="{Binding BarWidth}"
+                                                                   Height="14" CornerRadius="7" HorizontalAlignment="Left"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- ======= SETTINGS PAGE ======= -->
+                        <Border Style="{StaticResource CardStyle}"
+                                Visibility="{Binding SelectedPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Settings}">
+                            <StackPanel>
+                                <TextBlock Text="Settings &amp; Shortcuts" FontSize="20" FontWeight="Bold"
+                                           Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,20"/>
+                                <TextBlock Text="Windows 11 workflow helpers" FontSize="15" FontWeight="SemiBold"
+                                           Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,16"/>
+                                <Border Background="#F9FAFB" CornerRadius="10" Padding="16">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <Border Background="#EFF6FF" CornerRadius="5" Padding="8,3" Margin="0,0,10,0">
+                                                <TextBlock Text="Ctrl+Alt+S" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas"/>
+                                            </Border>
+                                            <TextBlock Text="Start or pause the current Pomodoro" FontSize="13"
+                                                       Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <Border Background="#EFF6FF" CornerRadius="5" Padding="8,3" Margin="0,0,10,0">
+                                                <TextBlock Text="Ctrl+Alt+N" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas"/>
+                                            </Border>
+                                            <TextBlock Text="Skip to the next session" FontSize="13"
+                                                       Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <Border Background="#EFF6FF" CornerRadius="5" Padding="8,3" Margin="0,0,10,0">
+                                                <TextBlock Text="Ctrl+Alt+K" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas"/>
+                                            </Border>
+                                            <TextBlock Text="Restore the Kvanto window from anywhere" FontSize="13"
+                                                       Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="• Closing the main window hides it to the system tray instead of exiting." FontSize="13"
+                                                   Foreground="{StaticResource SecondaryTextBrush}" Margin="0,4,0,8"/>
+                                        <TextBlock Text="• The tray menu provides: open, start/pause, stop, skip, compact overlay, and exit." FontSize="13"
+                                                   Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,8"/>
+                                        <TextBlock Text="• Session-complete notifications prompt for the next action." FontSize="13"
+                                                   Foreground="{StaticResource SecondaryTextBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
 </Window>
+
